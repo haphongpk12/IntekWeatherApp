@@ -20,20 +20,23 @@ export default class App extends React.Component {
     super(props);
     this.state = {
       name: '',
-      data: [],
+      data: '',
+      weather: '',
     };
   }
   fetchData = value => {
     this.setState({ name: value });
     fetch(
       `http://api.openweathermap.org/data/2.5/weather?units=metric&q=${
-      this.state.name
+        this.state.name
       }&APPID=992619451504426b6920c762daa6ac96`
     )
       .then(response => response.json())
       .then(responseJson => {
         this.setState({
           data: responseJson.main,
+          name: responseJson.name,
+          weather: responseJson.weather[0],
         });
       })
       .catch(error => console.log(error));
@@ -58,14 +61,16 @@ export default class App extends React.Component {
           style={styles.textinput}
           placeholder="Input your city"
           placeholderTextColor="#2d5291"
-          onChangeText={name => this.setState({ name })}
+          onChangeText={name => {
+            this.setState({ name });
+          }}
           value={`${this.state.name}`}
         />
         <Picker
-          selectedValue={this.state.name}
+          selectedValue={`${this.state.name}`}
           style={styles.pickers}
-          onValueChange={itemValue => {
-            this.fetchData(itemValue);
+          onValueChange={(itemValue, itemIndex) => {
+            this.setState({ name: itemValue }), this.fetchData(itemValue);
           }}>
           {data_json.map(item => {
             return (
@@ -74,25 +79,29 @@ export default class App extends React.Component {
           })}
         </Picker>
         <ImageBackground
-          source={{ uri: 'http://openweathermap.org/img/w/' + this.state.data.weather[0].icon + '.png' }}
-          style={styles.imageWeather}
+          source={{
+            uri:
+              'http://openweathermap.org/img/w/' +
+              this.state.weather.icon +
+              '.png',
+          }}
+          style={styles.image}
         />
         <View style={styles.info}>
           <Text style={styles.infotext}>
-            City: {this.state.data.name}
+            City: {this.state.name}
             {'\n\n'}
           </Text>
           <Text style={styles.infotext}>
-            Temperature: {this.state.data.main.temp}
+            Temperature: {this.state.data.temp}
           </Text>
           <Text style={styles.infotext}>
-            Pressure: {this.state.data.main.pressure}
+            Pressure: {this.state.data.pressure}
           </Text>
           <Text style={styles.infotext}>
-            Humidity: {this.state.data.main.humidity}
+            Humidity: {this.state.data.humidity}
           </Text>
         </View>
-        ;
       </View>
     );
   }
@@ -145,9 +154,13 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   info: {
-    marginTop: 150,
+    marginTop: 200,
   },
   infotext: {
     fontSize: 18,
+  },
+  image: {
+    width: 100,
+    position: 'absolute',
   },
 });
